@@ -1,0 +1,11 @@
+{
+  "name": "cert-portal",
+  "version": "1.0.0",
+  "scripts": {
+    "vulnerable": "node server.vulnerable.js",
+    "fixed": "node server.fixed.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Portal</title>
+<style>
+body{font-family:system-ui;max-width:480px;margin:20px auto;padding:0 14px}
+input,button{width:100%;padding:10px;margin:4px 0;box-sizing:border-box}
+.card{border:1px solid #ccc;border-radius:8px;padding:12px;margin:12px 0}
+.cert{border:4px double #444;text-align:center;padding:20px}
+.err{color:#b00}
+</style></head><body>
+<h2>Student Portal</h2>
+ 
+<div id="login" class="card">
+  <input id="matric" placeholder="Matric no (DSU/001 or DSU/002)">
+  <input id="password" type="password" placeholder="Password (1234)">
+  <button onclick="login()">Login</button>
+</div>
+ 
+<div id="dash" class="card" style="display:none">
+  <p><b id="who"></b> — progress: <span id="prog"></span>%</p>
+  <input id="newName" placeholder="Edit name">
+  <button onclick="updateName()">Save name</button>
+  <hr>
+  <input id="certName" placeholder="Name to print on certificate">
+  <button onclick="getCert()">Generate certificate</button>
+</div>
+ 
+<p id="msg" class="err"></p>
+<div id="out"></div>
+ 
+<script>
+let token = '', me = null;
+const api = (url, method, body) => fetch(url, {
+  method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+  body: body && JSON.stringify(body) }).then(async r => ({ ok: r.ok, data: await r.json() }));
+const $ = id => document.getElementById(id);
+ 
+async function login() {
+  const r = await api('/api/login', 'POST', { matric: $('matric').value, password: $('password').value });
+  if (!r.ok) return $('msg').textContent = r.data.error;
+  token = r.data.token; me = r.data.student;
+  $('login').style.display = 'none'; $('dash').style.display = 'block';
+  $('who').textContent = me.name + ' (' + me.matric + ')';
+  $('prog').textContent = me.progress; $('certName').value = me.name; $('msg').textContent = '';
+}
+async function updateName() {
+  const r = await api('/api/name', 'PUT', { matric: me.matric, name: $('newName').value });
+  if (!r.ok) return $('msg').textContent = r.data.error;
+  me.name = r.data.name; $('who').textContent = me.name + ' (' + me.matric + ')';
+  $('certName').value = me.name; $('msg').textContent = '';
+}
+async function getCert() {
+  const r = await api('/api/certificate', 'POST', { matric: me.matric, name: $('certName').value });
+  if (!r.ok) { $('out').innerHTML = ''; return $('msg').textContent = r.data.error; }
+  const c = r.data.certificate; $('msg').textContent = '';
+  $('out').innerHTML = `<div class="cert"><h3>Certificate of Completion</h3>
+    <p>This certifies that</p><h2>${c.name}</h2>
+    <p>completed ${c.programme}</p><small>${c.date} ${c.certId ? '• ' + c.certId : ''}</small></div>`;
+}
+</script></body></html>
