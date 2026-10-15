@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "vulnerable": "node server.vulnerable.js",
-    "fixed": "node server.fixed.js"
+    "fixed": "node server.fix.js"
   },
   "dependencies": {
     "express": "^4.19.2"
